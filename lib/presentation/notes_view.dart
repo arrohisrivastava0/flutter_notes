@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_notes/domain/modal/notes_modal.dart';
@@ -15,33 +16,33 @@ class NotesView extends StatefulWidget {
 class _NotesViewState extends State<NotesView> {
   List<Map<String, String>> notes = [];
 
-  void createNewNote(String title) {
+  void createNewNote(BuildContext context, String title) {
     NotesModal newNote = NotesModal(
         id: DateTime.now().millisecondsSinceEpoch, title: title, body: '');
-    goToNoteEditor(newNote, true);
+    goToNoteEditor(context, newNote, true);
   }
 
-  void goToNoteEditor(NotesModal note, bool isNew) {
+  void goToNoteEditor(BuildContext context, NotesModal note, bool isNew) {
     Navigator.push(
-        context as BuildContext,
+      context,
         MaterialPageRoute(
-            builder: (context) =>
-                NoteEditorPage(notesModal: note, isNew: isNew)));
+            builder: (_) =>
+                NoteEditorPage(notesModal: note, isNew: isNew)
+        )
+    );
   }
 
-  String _clipNoteBody(String body, int charLimit) {
-    if (body.length <= charLimit)
-      return body; // If within the limit, return as is
-    return '${body.substring(0, charLimit)}...'; // Take the first few characters and add "..."
-  }
-
-  void _showTodoAddBox(BuildContext context) {
+  void _showNoteTitleAddBox(BuildContext context) {
     final textController = TextEditingController();
-    // final notesCubit = context.read<NotesCubit>();
+    final notesCubit = context.read<NotesCubit>();
 
     showDialog(context: context, builder: (context) =>
         AlertDialog(
-          content: TextField(controller: textController,),
+          title: const Text('Add New Note'),
+          content: TextField(
+            controller: textController,
+            decoration: const InputDecoration(hintText: 'Enter note title'),
+          ),
           actions: [
             //cancel
             TextButton(
@@ -50,8 +51,21 @@ class _NotesViewState extends State<NotesView> {
             ),
             //add
             TextButton(
-                onPressed: () {
-                  createNewNote(textController.text);
+                onPressed: () async {
+                  if (textController.text.trim().isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Title cannot be empty')),
+                    );
+                    return;
+                  }
+                  Navigator.of(context).pop();
+                  final newNote= await notesCubit.addNote(textController.text.trim(), '');
+                  // final newNote = NotesModal(
+                  //   id: DateTime.now().millisecondsSinceEpoch,
+                  //   title: textController.text.trim(),
+                  //   body: '',
+                  // );
+                  goToNoteEditor(context, newNote, true)  ;
                 },
                 child: const Text('Add')
             )
@@ -63,31 +77,46 @@ class _NotesViewState extends State<NotesView> {
   Widget build(BuildContext context) {
     final notesCubit = context.read<NotesCubit>();
     return Scaffold(
+      backgroundColor: Colors.grey,
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
         onPressed: () {
-          _showTodoAddBox(context);
+          _showNoteTitleAddBox(context);
         },
       ),
       body: BlocBuilder<NotesCubit, List<NotesModal>>(
         builder: (context, notes) {
-          return ListView.builder(
-              itemCount: notes.length,
-              itemBuilder: (context, index) {
-                final note = notes[index];
-                return ListTile(
-                  title: Text(
-                    note.title,
-                  ),
-                  subtitle: Text(
-                    _clipNoteBody(note.body, 50),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  onTap: () {
-                    goToNoteEditor(note, false);
-                  },
-                );
-              });
+          if (notes.isEmpty) {
+            return const Center(child: Text('No notes available.'));
+          }
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ListView.builder(
+                itemCount: notes.length,
+                itemBuilder: (context, index) {
+                  final note = notes[index];
+                  return Padding(
+                    padding: const EdgeInsets.all(5.0),
+                    child: ListTile(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15)
+                      ),
+                      tileColor: Colors.white,
+                      title: Text(
+                        note.title,
+                      ),
+                      subtitle: Text(
+                        note.body.length > 50
+                            ? '${note.body.substring(0, 50)}...'
+                            : note.body,
+                      ),
+                      onTap: () {
+                        goToNoteEditor(context, note, false);
+                      },
+                    ),
+                  );
+                }),
+          );
         },
       ),
     );

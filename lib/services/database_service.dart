@@ -16,6 +16,7 @@ class DatabaseService{
   DatabaseService._constructor(){
     if(!Platform.isAndroid && !Platform.isIOS){
       sqfliteFfiInit();
+      databaseFactory = databaseFactoryFfi;
     }
   }
   static Database ? _database;

@@ -12,21 +12,27 @@ class NotesCubit extends Cubit<List<NotesModal>>{
     emit(notes);
   }
 
-  Future<void> addNote(String title, String body)async {
+  Future<NotesModal> addNote(String title, String body)async {
     final newNote=NotesModal(id: DateTime.now().millisecondsSinceEpoch, title: title, body: body);
     await notesRepo.addNote(newNote);
-    loadNotes();
-
+    emit([...state, newNote]);
+    return newNote;
   }
 
-  Future<void> updateNote(String title, String body)async {
-    final updatedNote=NotesModal(id: DateTime.now().millisecondsSinceEpoch, title: title, body: body);
+  Future<void> updateNote(int id, String title, String body)async {
+    final updatedNote=NotesModal(id: id, title: title, body: body);
     await notesRepo.updateNote(updatedNote);
-    loadNotes();
+    // Update the note in the current state
+    final updatedNotes = state.map((note) {
+      return note.id == id ? updatedNote : note;
+    }).toList();
+
+    emit(updatedNotes);
   }
 
   Future<void> deleteNote(NotesModal notesModal)async {
     await notesRepo.deleteNote(notesModal);
-    loadNotes();
+    final updatedNotes = state.where((note) => note.id != notesModal.id).toList();
+    emit(updatedNotes);
   }
 }
