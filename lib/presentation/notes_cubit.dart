@@ -9,11 +9,16 @@ class NotesCubit extends Cubit<List<NotesModal>>{
 
   Future<void> loadNotes()async {
     final notes=await notesRepo.getNotes();
+    print('Loaded notes: $notes');
     emit(notes);
   }
 
   Future<NotesModal> addNote(String title, String body)async {
-    final newNote=NotesModal(id: DateTime.now().millisecondsSinceEpoch, title: title, body: body);
+    final newNote=NotesModal(
+        id: DateTime.now().millisecondsSinceEpoch,
+        title: title,
+        body: body
+    );
     await notesRepo.addNote(newNote);
     emit([...state, newNote]);
     return newNote;
@@ -23,13 +28,29 @@ class NotesCubit extends Cubit<List<NotesModal>>{
     final updatedNote=NotesModal(id: id, title: title, body: body);
     print('Updating note in cubit: $updatedNote');
     await notesRepo.updateNote(updatedNote);
-    await loadNotes();
-    // Update the note in the current state
     final updatedNotes = state.map((note) {
-      return note.id == id ? updatedNote : note;
+      if (note.id == id) {
+        return NotesModal(id: id, title: title, body: body);
+      }
+      return note;
     }).toList();
+    print("Before emitting updated state: $updatedNotes");
+    emit([...state, updatedNote]);
+    print("After emitting updated state"); // Emit the updated state
 
-    emit(updatedNotes);
+
+    // final updatedNote=NotesModal(id: id, title: title, body: body);
+    // print('Updating note in cubit: $updatedNote');
+    // await notesRepo.updateNote(updatedNote);
+    // await loadNotes();
+    // emit(state.map((note) => note.id == id ? updatedNote : note).toList());
+
+    // Update the note in the current state
+    // final updatedNotes = state.map((note) {
+    //   return note.id == id ? updatedNote : note;
+    // }).toList();
+    //
+    // emit(updatedNotes);
   }
 
   Future<void> deleteNote(NotesModal notesModal)async {

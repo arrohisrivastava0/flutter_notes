@@ -20,4 +20,9 @@ class NotesModal{
       'body':body,
     };
   }
+
+  @override
+  String toString() {
+    return 'NotesModal(id: $id, title: $title, body: $body)';
+  }
 }

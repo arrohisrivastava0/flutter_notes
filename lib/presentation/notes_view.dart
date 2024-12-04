@@ -113,6 +113,7 @@ class _NotesViewState extends State<NotesView> {
                             : note.body,
                       ),
                       onTap: () {
+                        context.read<NotesCubit>().loadNotes();
                         goToNoteEditor(context, note, false);
                       },
                     ),

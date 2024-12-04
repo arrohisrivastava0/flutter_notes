@@ -17,13 +17,6 @@ void main() async {
   );
 }
 
-// void main() async {
-//   WidgetsFlutterBinding.ensureInitialized();
-//   final databaseService = DatabaseService.instance;
-//   final notesRepository = NotesRepoImpl(databaseService);
-//   runApp(MyApp(notesRepoImpl: notesRepository));
-// }
-
 class MyApp extends StatelessWidget {
   final NotesRepoImpl notesRepoImpl;
   const MyApp({super.key, required this.notesRepoImpl});
