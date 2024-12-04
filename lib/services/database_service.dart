@@ -49,12 +49,14 @@ class DatabaseService{
 
   Future<NotesModal> addNote(NotesModal note) async{
     final db=await database;
+    print('Adding note to database: ${note.toMap()}');
     note.id = await db.insert(tableNotes, note.toMap());
     return note;
   }
 
   Future<int> updateNote(NotesModal note) async{
     final db=await database;
+    print('Updating note in database: ${note.toMap()}');
     return await db.update(tableNotes, note.toMap(),
         where: '$id = ?', whereArgs: [note.id]);
   }

@@ -21,7 +21,9 @@ class NotesCubit extends Cubit<List<NotesModal>>{
 
   Future<void> updateNote(int id, String title, String body)async {
     final updatedNote=NotesModal(id: id, title: title, body: body);
+    print('Updating note in cubit: $updatedNote');
     await notesRepo.updateNote(updatedNote);
+    await loadNotes();
     // Update the note in the current state
     final updatedNotes = state.map((note) {
       return note.id == id ? updatedNote : note;

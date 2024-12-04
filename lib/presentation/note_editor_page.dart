@@ -46,6 +46,7 @@ class _NoteEditorPageState extends State<NoteEditorPage>{
 
   void _saveNote() {
     final body = _controller.document.toPlainText().trim();
+    print('Updating note in cubit: $body');
     final notesCubit = context.read<NotesCubit>();
     if (widget.isNew) {
       notesCubit.addNote(title, body);
@@ -63,7 +64,7 @@ class _NoteEditorPageState extends State<NoteEditorPage>{
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            _saveNote;
+            _saveNote();
             Navigator.pop(context); // Default back behavior
             // Add additional logic here
           },
@@ -73,7 +74,7 @@ class _NoteEditorPageState extends State<NoteEditorPage>{
           IconButton(
             icon: const Icon(Icons.save),
             onPressed:() {
-              _saveNote;
+              _saveNote();
               Navigator.pop(context);
             }
           ),
@@ -82,17 +83,18 @@ class _NoteEditorPageState extends State<NoteEditorPage>{
       body: Column(
         children: [
           QuillToolbar.simple(controller: _controller),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Expanded(
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
               child: QuillEditor.basic(
                 controller: _controller,
-                configurations: const QuillEditorConfigurations(),
+                // Set to true if the editor should be read-only
               ),
             ),
           ),
         ],
       ),
+
     );
   }
 }

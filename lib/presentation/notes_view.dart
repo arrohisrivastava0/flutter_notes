@@ -25,10 +25,12 @@ class _NotesViewState extends State<NotesView> {
   void goToNoteEditor(BuildContext context, NotesModal note, bool isNew) {
     Navigator.push(
       context,
-        MaterialPageRoute(
-            builder: (_) =>
-                NoteEditorPage(notesModal: note, isNew: isNew)
-        )
+      MaterialPageRoute(
+        builder: (context) => BlocProvider.value(
+          value: context.read<NotesCubit>(),
+          child: NoteEditorPage(notesModal: note, isNew: isNew),
+        ),
+      ),
     );
   }
 
