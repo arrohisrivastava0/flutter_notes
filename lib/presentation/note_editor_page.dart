@@ -44,7 +44,7 @@ class _NoteEditorPageState extends State<NoteEditorPage>{
     });
   }
 
-  void _saveAlert(BuildContext context){
+  void _saveAlert(){
     showDialog(context: context, builder: (context) =>
     AlertDialog(
       title: const Text('Save Note'),
@@ -52,7 +52,11 @@ class _NoteEditorPageState extends State<NoteEditorPage>{
       actions:[
         TextButton(
           onPressed: () {
-            Navigator.of(context).pop();
+            // Navigator.of(context).pop();
+            // final notesCubit = context.read<NotesCubit>();
+            Navigator.pop(context);
+            Navigator.pop(context);
+
           },
           child: const Text('Cancel'),
         ),
@@ -72,11 +76,11 @@ class _NoteEditorPageState extends State<NoteEditorPage>{
     final body = _controller.document.toPlainText().trim();
     print('Updating note in save note func cubit: $body');
     final notesCubit = context.read<NotesCubit>();
-    if (widget.isNew) {
-      await notesCubit.addNote(title, body);
-    } else {
+    // if (widget.isNew) {
+    //   await notesCubit.addNote(title, body);
+    // } else {
       await notesCubit.updateNote(widget.notesModal.id, title, body);
-    }
+    // }
     notesCubit.loadNotes();
     Navigator.pop(context); // Navigate back to the previous screen
   }
@@ -89,10 +93,7 @@ class _NoteEditorPageState extends State<NoteEditorPage>{
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            _saveAlert(context);
-            // _saveNote();
-            // Navigator.pop(context); // Default back behavior
-            // Add additional logic here
+            _saveAlert();
           },
         ),
 
@@ -101,7 +102,6 @@ class _NoteEditorPageState extends State<NoteEditorPage>{
             icon: const Icon(Icons.save),
             onPressed:() {
                _saveNote();
-              // Navigator.pop(context);
             }
           ),
         ],
