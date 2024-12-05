@@ -18,7 +18,9 @@ class _NotesViewState extends State<NotesView> {
 
   void createNewNote(BuildContext context, String title) {
     NotesModal newNote = NotesModal(
-        id: DateTime.now().millisecondsSinceEpoch, title: title, body: '');
+        id: DateTime
+            .now()
+            .millisecondsSinceEpoch, title: title, body: '');
     goToNoteEditor(context, newNote, true);
   }
 
@@ -26,10 +28,11 @@ class _NotesViewState extends State<NotesView> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => BlocProvider.value(
-          value: context.read<NotesCubit>(),
-          child: NoteEditorPage(notesModal: note, isNew: isNew),
-        ),
+        builder: (context) =>
+            BlocProvider.value(
+              value: context.read<NotesCubit>(),
+              child: NoteEditorPage(notesModal: note, isNew: isNew),
+            ),
       ),
     );
   }
@@ -37,10 +40,10 @@ class _NotesViewState extends State<NotesView> {
   void _showNoteTitleAddBox(BuildContext context) {
     final textController = TextEditingController();
     final notesCubit = context.read<NotesCubit>();
-
     showDialog(
         context: context,
-        builder: (context) => AlertDialog(
+        builder: (context) =>
+            AlertDialog(
               title: const Text('Add New Note'),
               content: TextField(
                 controller: textController,
@@ -54,9 +57,12 @@ class _NotesViewState extends State<NotesView> {
                 //add
                 TextButton(
                     onPressed: () async {
-                      if (textController.text.trim().isEmpty) {
+                      if (textController.text
+                          .trim()
+                          .isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Title cannot be empty')),
+                          const SnackBar(
+                              content: Text('Title cannot be empty')),
                         );
                         return;
                       }
@@ -68,6 +74,74 @@ class _NotesViewState extends State<NotesView> {
                     child: const Text('Add'))
               ],
             ));
+  }
+
+  void _showDeleteBottomSheet(BuildContext context) {
+    final notesCubit = context.read<NotesCubit>();
+    showBottomSheet(
+        context: context,
+        builder: (BuildContext context) =>
+        (
+            BottomAppBar(
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextButton(
+                        onPressed: () {
+                          notesCubit.toggleSelectionMode;
+                          Navigator.pop(context, true);
+                        },
+                        child: Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () async {
+                          if (context
+                              .read<NotesCubit>()
+                              .selectedNoteIds
+                              .isNotEmpty) {
+                            final confirmed = await showDialog<bool>(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                      title: const Text('Confirm Deletion'),
+                                      content: const Text(
+                                        'Are you sure you want to delete the selected notes?',
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context, false),
+                                          child: const Text('No'),
+                                        ),
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context, true),
+                                          child: const Text('Yes'),
+                                        ),
+                                      ]);
+                                });
+                            if (confirmed == true) {
+                              await context.read<NotesCubit>()
+                                  .deleteSelectedNotes();
+                              context.read<NotesCubit>()
+                                  .toggleSelectionMode(); // Exit selection mode
+                              Navigator.pop(context, true);
+                            }
+                          }
+                          else{
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text('No notes selected')),
+                            );
+                          }
+                        },
+                        child: const Text('Delete Selected'),
+                      )
+                    ]
+                )
+            )
+        )
+    );
   }
 
   void deleteNotes(NotesModal note) {}
@@ -82,19 +156,32 @@ class _NotesViewState extends State<NotesView> {
       appBar: AppBar(
         title: BlocBuilder<NotesCubit, List<NotesModal>>(
           builder: (context, notes) {
-            final isSelectionMode = context.read<NotesCubit>().selectionMode;
+            final isSelectionMode = context
+                .read<NotesCubit>()
+                .selectionMode;
             return Text(isSelectionMode ? 'Select Notes' : 'Notes');
           },
         ),
         actions: [
           BlocBuilder<NotesCubit, List<NotesModal>>(
             builder: (context, notes) {
-              final isSelectionMode = context.read<NotesCubit>().selectionMode;
+              final isSelectionMode = context
+                  .read<NotesCubit>()
+                  .selectionMode;
               return IconButton(
+                // icon:Icon(Icons.delete),
                 icon: Icon(isSelectionMode ? Icons.select_all : Icons.delete),
                 onPressed: () {
-
                   context.read<NotesCubit>().toggleSelectionMode();
+                  _showDeleteBottomSheet(context);
+
+                  // icon:Icon(Icons.select_all);
+                  // onPressed:(){
+                  //   context.read<NotesCubit>().deselectAllNotes();
+                  //   context.read<NotesCubit>().selectAllNotes();
+                  // };
+                  // context.read<NotesCubit>().deselectAllNotes();
+                  // context.read<NotesCubit>().toggleSelectionMode();
                 },
               );
             },
@@ -133,7 +220,10 @@ class _NotesViewState extends State<NotesView> {
                 itemCount: notes.length,
                 itemBuilder: (context, index) {
                   final note = notes[index];
-                  final isSelected = context.read<NotesCubit>().selectedNoteIds.contains(note.id);
+                  final isSelected = context
+                      .read<NotesCubit>()
+                      .selectedNoteIds
+                      .contains(note.id);
                   // final isSelected =
                   //     notesCubit.selectedNoteIds.contains(note.id);
                   return Padding(
@@ -152,66 +242,74 @@ class _NotesViewState extends State<NotesView> {
                       ),
                       leading: notesCubit.selectionMode
                           ? Checkbox(
-                              value: isSelected,
-                              onChanged: (_) =>
-                                  notesCubit.toggleNoteSelection(note.id),
-                            )
+                        value: isSelected,
+                        onChanged: (_) =>
+                            notesCubit.toggleNoteSelection(note.id),
+                      )
                           : null,
-                      onTap: context.read<NotesCubit>().selectionMode
-                          ? () => context.read<NotesCubit>().toggleNoteSelection(note.id)
+                      onTap: context
+                          .read<NotesCubit>()
+                          .selectionMode
+                          ? () =>
+                          context.read<NotesCubit>().toggleNoteSelection(
+                              note.id)
                           : () {
-                              // notesCubit.deleteNote(note);
-                              context.read<NotesCubit>().loadNotes();
-                              goToNoteEditor(context, note, false);
-                            },
+                        // notesCubit.deleteNote(note);
+                        context.read<NotesCubit>().loadNotes();
+                        goToNoteEditor(context, note, false);
+                      },
                     ),
                   );
                 }),
           );
         },
       ),
-        bottomSheet: notesCubit.selectionMode
-            ? BottomAppBar(
-            child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  TextButton(
-                    onPressed: notesCubit.toggleSelectionMode,
-                    child: Text('Cancel'),
-                  ),
-                  TextButton(
-                    onPressed: () async {
-                      if (context.read<NotesCubit>().selectedNoteIds.isNotEmpty) {
-                        final confirmed = await showDialog<bool>(
-                            context: context,
-                            builder: (context) {
-                              return AlertDialog(
-                                  title: const Text('Confirm Deletion'),
-                                  content: const Text(
-                                    'Are you sure you want to delete the selected notes?',
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.pop(context, false),
-                                      child: const Text('No'),
-                                    ),
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.pop(context, true),
-                                      child: const Text('Yes'),
-                                    ),
-                                  ]);
-                            });
-                        if (confirmed == true) {
-                          await context.read<NotesCubit>().deleteSelectedNotes();
-                          context.read<NotesCubit>().toggleSelectionMode(); // Exit selection mode
-                        }
-                      }
-                    },
-                    child: const Text('Delete Selected'),
-                  )
-                ])): null,
+      // bottomSheet: notesCubit.selectionMode
+      //     ? BottomAppBar(
+      //     child: Row(
+      //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      //         children: [
+      //           TextButton(
+      //             onPressed: notesCubit.toggleSelectionMode,
+      //             child: Text('Cancel'),
+      //           ),
+      //           TextButton(
+      //             onPressed: () async {
+      //               if (context
+      //                   .read<NotesCubit>()
+      //                   .selectedNoteIds
+      //                   .isNotEmpty) {
+      //                 final confirmed = await showDialog<bool>(
+      //                     context: context,
+      //                     builder: (context) {
+      //                       return AlertDialog(
+      //                           title: const Text('Confirm Deletion'),
+      //                           content: const Text(
+      //                             'Are you sure you want to delete the selected notes?',
+      //                           ),
+      //                           actions: [
+      //                             TextButton(
+      //                               onPressed: () =>
+      //                                   Navigator.pop(context, false),
+      //                               child: const Text('No'),
+      //                             ),
+      //                             TextButton(
+      //                               onPressed: () =>
+      //                                   Navigator.pop(context, true),
+      //                               child: const Text('Yes'),
+      //                             ),
+      //                           ]);
+      //                     });
+      //                 if (confirmed == true) {
+      //                   await context.read<NotesCubit>().deleteSelectedNotes();
+      //                   context.read<NotesCubit>()
+      //                       .toggleSelectionMode(); // Exit selection mode
+      //                 }
+      //               }
+      //             },
+      //             child: const Text('Delete Selected'),
+      //           )
+      //         ])) : null,
     );
   }
 }
