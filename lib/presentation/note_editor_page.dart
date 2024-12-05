@@ -52,8 +52,6 @@ class _NoteEditorPageState extends State<NoteEditorPage>{
       actions:[
         TextButton(
           onPressed: () {
-            // Navigator.of(context).pop();
-            // final notesCubit = context.read<NotesCubit>();
             Navigator.pop(context);
             Navigator.pop(context);
 
@@ -76,9 +74,6 @@ class _NoteEditorPageState extends State<NoteEditorPage>{
     final body = _controller.document.toPlainText().trim();
     print('Updating note in save note func cubit: $body');
     final notesCubit = context.read<NotesCubit>();
-    // if (widget.isNew) {
-    //   await notesCubit.addNote(title, body);
-    // } else {
       await notesCubit.updateNote(widget.notesModal.id, title, body);
     // }
     notesCubit.loadNotes();

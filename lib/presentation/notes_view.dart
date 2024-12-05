@@ -152,7 +152,6 @@ class _NotesViewState extends State<NotesView> {
     );
   }
 
-  void deleteNotes(NotesModal note) {}
 
   @override
   Widget build(BuildContext context) {
