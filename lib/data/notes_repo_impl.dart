@@ -18,6 +18,11 @@ class NotesRepoImpl implements NotesRepo{
   }
 
   @override
+  Future<void> deleteNoteById(int id) async {
+    await _databaseService.delete('notes', 'id = ?', [id]);
+  }
+
+  @override
   Future<List<NotesModal>> getNotes() async{
     return await _databaseService.getNotes();
   }

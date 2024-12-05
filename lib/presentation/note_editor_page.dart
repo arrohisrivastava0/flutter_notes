@@ -44,6 +44,30 @@ class _NoteEditorPageState extends State<NoteEditorPage>{
     });
   }
 
+  void _saveAlert(BuildContext context){
+    showDialog(context: context, builder: (context) =>
+    AlertDialog(
+      title: const Text('Save Note'),
+      content: const Text('Are you sure you dont want to save note'),
+      actions:[
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () {
+            _saveNote();
+            Navigator.pop(context);
+          },
+          child: const Text('Save'),
+
+        )
+      ],
+    ));
+  }
+
   void _saveNote() async{
     final body = _controller.document.toPlainText().trim();
     print('Updating note in save note func cubit: $body');
@@ -65,7 +89,8 @@ class _NoteEditorPageState extends State<NoteEditorPage>{
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            _saveNote();
+            _saveAlert(context);
+            // _saveNote();
             // Navigator.pop(context); // Default back behavior
             // Add additional logic here
           },

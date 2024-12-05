@@ -75,5 +75,10 @@ class DatabaseService{
     return maps.map((map)=> NotesModal.fromMap(map)).toList();
   }
 
+  Future<void> delete(String table, String whereClause, List<Object> whereArgs) async {
+    final db = await instance.database;
+    await db.delete(table, where: whereClause, whereArgs: whereArgs);
+  }
+
   Future close() async => _database!.close();
 }

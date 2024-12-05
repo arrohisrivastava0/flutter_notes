@@ -5,6 +5,8 @@ import '../domain/repository/notes_repo.dart';
 
 class NotesCubit extends Cubit<List<NotesModal>>{
   final NotesRepo notesRepo;
+  bool selectionMode = false; // Track if selection mode is active
+  Set<int> selectedNoteIds = {};
   NotesCubit(this.notesRepo): super([]);
 
   Future<void> loadNotes()async {
@@ -38,19 +40,47 @@ class NotesCubit extends Cubit<List<NotesModal>>{
     emit([...state, updatedNote]);
     print("After emitting updated state"); // Emit the updated state
 
+  }
 
-    // final updatedNote=NotesModal(id: id, title: title, body: body);
-    // print('Updating note in cubit: $updatedNote');
-    // await notesRepo.updateNote(updatedNote);
-    // await loadNotes();
-    // emit(state.map((note) => note.id == id ? updatedNote : note).toList());
+  // Toggle selection mode
+  void toggleSelectionMode() {
+    selectionMode = !selectionMode;
+    selectedNoteIds.clear(); // Reset selections when mode changes
 
-    // Update the note in the current state
-    // final updatedNotes = state.map((note) {
-    //   return note.id == id ? updatedNote : note;
-    // }).toList();
-    //
-    // emit(updatedNotes);
+    emit(List.from(state)); // Re-emit the state
+    print('Selection mode: $selectionMode');
+  }
+
+  // Select or deselect a note
+  void toggleNoteSelection(int noteId) {
+    if (selectedNoteIds.contains(noteId)) {
+      selectedNoteIds.remove(noteId);
+    } else {
+      selectedNoteIds.add(noteId);
+    }
+    emit(List.from(state)); // Re-emit the state
+  }
+
+  // Select all notes
+  void selectAllNotes() {
+    selectedNoteIds = state.map((note) => note.id).toSet();
+    emit(List.from(state));
+  }
+
+  // Deselect all notes
+  void deselectAllNotes() {
+    selectedNoteIds.clear();
+    emit(List.from(state));
+  }
+
+  // Delete selected notes
+  Future<void> deleteSelectedNotes() async {
+    for (int id in selectedNoteIds) {
+      await notesRepo.deleteNoteById(id);
+    }
+    selectedNoteIds.clear();// Clear selected notes
+    print("Deleted Notes: ${selectedNoteIds.toList()}");
+    await loadNotes(); // Reload notes from the database
   }
 
   Future<void> deleteNote(NotesModal notesModal)async {

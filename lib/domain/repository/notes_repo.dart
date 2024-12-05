@@ -5,4 +5,5 @@ abstract class NotesRepo{
   Future<void> updateNote(NotesModal notesModal);
   Future<void> deleteNote(NotesModal notesModal);
   Future<List<NotesModal>> getNotes();
+  Future<void> deleteNoteById(int id);
 }
